@@ -1,9 +1,11 @@
 import random
-#This class contain the 8 Queen solutions based on Genetic Algorithom
-def random_chromosome(size): #making random chromosomes 
+
+# Function to generate the initial population
+def initial_chromosome(size): #making random chromosomes 
     return [ random.randint(1, nq) for _ in range(nq) ]
 
-def fitness(chromosome):
+# Function to score the population 
+def score(chromosome):
     horizontal_collisions = sum([chromosome.count(queen)-1 for queen in chromosome])/2
     diagonal_collisions = 0
 
@@ -25,8 +27,8 @@ def fitness(chromosome):
     
     return int(maxFitness - (horizontal_collisions + diagonal_collisions)) #28-(2+3)=23
 
-def probability(chromosome, fitness):
-    return fitness(chromosome) / maxFitness
+def probability(chromosome, score):
+    return score(chromosome) / maxFitness
 
 def random_pick(population, probabilities):
     populationWithProbabilty = zip(population, probabilities)
@@ -39,7 +41,7 @@ def random_pick(population, probabilities):
         upto += w
     assert False, "Shouldn't get here"
         
-def reproduce(x, y): #doing cross_over between two chromosomes
+def cross_over(x, y): #doing cross_over between two chromosomes
     n = len(x)
     c = random.randint(0, n - 1)
     return x[0:c] + y[c:n]
@@ -51,42 +53,42 @@ def mutate(x):  #randomly changing the value of a random index of a chromosome
     x[c] = m
     return x
 
-def genetic_queen(population, fitness):
+def genetic_queen(population, score):
     mutation_probability = 0.03
     new_population = []
-    probabilities = [probability(n, fitness) for n in population]
+    probabilities = [probability(n, score) for n in population]
     for i in range(len(population)):
         x = random_pick(population, probabilities) #best chromosome 1
         y = random_pick(population, probabilities) #best chromosome 2
-        child = reproduce(x, y) #creating two new chromosomes from the best 2 chromosomes
+        child = cross_over(x, y) #creating two new chromosomes from the best 2 chromosomes
         if random.random() < mutation_probability:
             child = mutate(child)
         print_chromosome(child)
         new_population.append(child)
-        if fitness(child) == maxFitness: break
+        if score(child) == maxFitness: break
     return new_population
 
 def print_chromosome(chrom):
     print("Chromosome = {},  Fitness = {}"
-        .format(str(chrom), fitness(chrom)))
+        .format(str(chrom), score(chrom)))
 
 if __name__ == "__main__":
     nq = int(input("Enter Number of Queens: ")) #say N = 8
     maxFitness = (nq*(nq-1))/2  # 8*7/2 = 28
-    population = [random_chromosome(nq) for _ in range(100)]
+    population = [initial_chromosome(nq) for _ in range(100)]
     
     generation = 1
 
-    while not maxFitness in [fitness(chrom) for chrom in population]:
+    while not maxFitness in [score(chrom) for chrom in population]:
         print("=== Generation {} ===".format(generation))
-        population = genetic_queen(population, fitness)
+        population = genetic_queen(population, score)
         print("")
-        print("Maximum Fitness = {}".format(max([fitness(n) for n in population])))
+        print("Maximum Fitness = {}".format(max([score(n) for n in population])))
         generation += 1
     chrom_out = []
     print("Solved in Generation {}!".format(generation-1))
     for chrom in population:
-        if fitness(chrom) == maxFitness:
+        if score(chrom) == maxFitness:
             print("");
             print("One of the solutions: ")
             chrom_out = chrom
@@ -110,5 +112,4 @@ if __name__ == "__main__":
             
            
             
-    
-
+   
